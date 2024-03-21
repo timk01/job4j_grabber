@@ -5,22 +5,36 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import ru.job4j.grabber.utils.DateTimeParser;
 
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 import java.util.Date;
 
-public class HabrCareerParse {
+public class HabrCareerParse implements DateTimeParser {
 
     /**
-     * https://career.habr.com/vacancies?page=1&q=Java%20developer&type=all
+     * "https://career.habr.com/vacancies?page=1&q=Java%20developer&type=all"
      * - полный путь (на самом деле мы собираем строчку, но номер страницы может меняться, остальное статично)
      */
 
     private static final String SOURCE_LINK = "https://career.habr.com";
     public static final String PREFIX = "/vacancies?page=";
     public static final String SUFFIX = "&q=Java%20developer&type=all";
+
+    @Override
+    public LocalDateTime parse(String parse) {
+        return ZonedDateTime
+                .parse(parse, DateTimeFormatter.ISO_DATE_TIME)
+                .toLocalDateTime();
+
+    }
 
     /**
      * Jsoup.connect(fullPage).get() - получение ВСЕЙ страницы
@@ -36,7 +50,7 @@ public class HabrCareerParse {
      * <P></P>
      * System.out.printf("%s %s%n", vacancyName, vacLink);
      * - в конце сбор из измени вакансии (предварительно подготовленного - это текст) + ссылки
-     * Java Developer https://career.habr.com/vacancies/1000091983
+     * Java Developer "https://career.habr.com/vacancies/1000091983"
      * ссылка содержит хабр + хРеф от вакансии
      * <P></P>
      * классы vacancy-card__title и vacancy-card__date являются дочерними элементами класса vacancy-card__inner.
@@ -84,6 +98,8 @@ public class HabrCareerParse {
         Document document = Jsoup.connect(fullPage).get();
         Elements vacancyCard = document.select(".vacancy-card__inner");
 
+        HabrCareerParse habrCareerParse = new HabrCareerParse();
+
         vacancyCard.forEach(row -> {
                     Element title = row.select(".vacancy-card__title").first();
                     Element link = title.child(0);
@@ -92,7 +108,7 @@ public class HabrCareerParse {
                     Element transition = row.select(".vacancy-card__date").first();
                     Element child = transition.child(0);
                     String formattedDate = String.format("%s", child.attr("datetime"));
-                    System.out.printf("%s; %s; %s%n", vacancyName, vacLink, formattedDate);
+                    System.out.printf("%s; %s; %s%n", vacancyName, vacLink, habrCareerParse.parse(formattedDate));
                 }
         );
     }
