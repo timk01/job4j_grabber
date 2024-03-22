@@ -6,6 +6,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import ru.job4j.grabber.utils.DateTimeParser;
+import ru.job4j.grabber.utils.Parser;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -17,7 +18,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.Date;
 
-public class HabrCareerParse implements DateTimeParser {
+public class HabrCareerParse {
 
     /**
      * "https://career.habr.com/vacancies?page=1&q=Java%20developer&type=all"
@@ -27,14 +28,6 @@ public class HabrCareerParse implements DateTimeParser {
     private static final String SOURCE_LINK = "https://career.habr.com";
     public static final String PREFIX = "/vacancies?page=";
     public static final String SUFFIX = "&q=Java%20developer&type=all";
-
-    @Override
-    public LocalDateTime parse(String parse) {
-        return ZonedDateTime
-                .parse(parse, DateTimeFormatter.ISO_DATE_TIME)
-                .toLocalDateTime();
-
-    }
 
     /**
      * Jsoup.connect(fullPage).get() - получение ВСЕЙ страницы
@@ -98,7 +91,7 @@ public class HabrCareerParse implements DateTimeParser {
         Document document = Jsoup.connect(fullPage).get();
         Elements vacancyCard = document.select(".vacancy-card__inner");
 
-        HabrCareerParse habrCareerParse = new HabrCareerParse();
+        DateTimeParser habrCareerParse = new Parser();
 
         vacancyCard.forEach(row -> {
                     Element title = row.select(".vacancy-card__title").first();

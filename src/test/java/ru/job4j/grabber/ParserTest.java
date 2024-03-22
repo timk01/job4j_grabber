@@ -1,27 +1,30 @@
 package ru.job4j.grabber;
 
-import junit.framework.TestCase;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import ru.job4j.grabber.utils.DateTimeParser;
+import ru.job4j.grabber.utils.Parser;
 
 import java.time.LocalDateTime;
 import java.time.Month;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 import static org.assertj.core.api.Assertions.*;
 
-public class HabrCareerParseTest {
+public class ParserTest {
 
-    private static HabrCareerParse habrCareerParse;
+    private static DateTimeParser parser;
 
     @BeforeAll
     public static void init() {
-        habrCareerParse = new HabrCareerParse();
+        parser = new Parser();
     }
 
     @Test
     public void parseFormattedDate1() {
         String date = "2024-02-21T18:21:56+03:00";
-        assertThat(habrCareerParse.parse(date))
+        assertThat(parser.parse(date))
                 .isEqualTo(LocalDateTime.of(
                         2024,
                         Month.FEBRUARY,
@@ -35,7 +38,7 @@ public class HabrCareerParseTest {
     @Test
     public void parseFormattedDate2() {
         String date = "2020-02-20T17:21:56+03:00";
-        assertThat(habrCareerParse.parse(date))
+        assertThat(parser.parse(date))
                 .isEqualTo(LocalDateTime.of(
                         2020,
                         Month.FEBRUARY,
