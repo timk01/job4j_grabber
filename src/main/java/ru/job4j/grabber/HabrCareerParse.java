@@ -1,6 +1,5 @@
 package ru.job4j.grabber;
 
-import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -9,14 +8,6 @@ import ru.job4j.grabber.utils.DateTimeParser;
 import ru.job4j.grabber.utils.Parser;
 
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAccessor;
-import java.util.Date;
 
 public class HabrCareerParse {
 
@@ -28,6 +19,8 @@ public class HabrCareerParse {
     private static final String SOURCE_LINK = "https://career.habr.com";
     public static final String PREFIX = "/vacancies?page=";
     public static final String SUFFIX = "&q=Java%20developer&type=all";
+    private static final int START_PAGE = 1;
+    private static final int END_PAGE = 5;
 
     /**
      * Jsoup.connect(fullPage).get() - получение ВСЕЙ страницы
@@ -86,23 +79,24 @@ public class HabrCareerParse {
      */
 
     public static void main(String[] args) throws IOException {
-        int pageNumber = 1;
-        String fullPage = String.format("%s%s%d%s", SOURCE_LINK, PREFIX, pageNumber, SUFFIX);
-        Document document = Jsoup.connect(fullPage).get();
-        Elements vacancyCard = document.select(".vacancy-card__inner");
+        for (int pageNumb = START_PAGE; pageNumb <= END_PAGE; pageNumb++) {
+            String fullPage = String.format("%s%s%d%s", SOURCE_LINK, PREFIX, pageNumb, SUFFIX);
+            Document document = Jsoup.connect(fullPage).get();
+            Elements vacancyCard = document.select(".vacancy-card__inner");
 
-        DateTimeParser habrCareerParse = new Parser();
+            DateTimeParser habrCareerParse = new Parser();
 
-        vacancyCard.forEach(row -> {
-                    Element title = row.select(".vacancy-card__title").first();
-                    Element link = title.child(0);
-                    String vacancyName = link.text();
-                    String vacLink = String.format("%s%s", SOURCE_LINK, link.attr("href"));
-                    Element transition = row.select(".vacancy-card__date").first();
-                    Element child = transition.child(0);
-                    String formattedDate = String.format("%s", child.attr("datetime"));
-                    System.out.printf("%s; %s; %s%n", vacancyName, vacLink, habrCareerParse.parse(formattedDate));
-                }
-        );
+            vacancyCard.forEach(row -> {
+                        Element title = row.select(".vacancy-card__title").first();
+                        Element link = title.child(0);
+                        String vacancyName = link.text();
+                        String vacLink = String.format("%s%s", SOURCE_LINK, link.attr("href"));
+                        Element transition = row.select(".vacancy-card__date").first();
+                        Element child = transition.child(0);
+                        String formattedDate = String.format("%s", child.attr("datetime"));
+                        System.out.printf("%s; %s; %s%n", vacancyName, vacLink, habrCareerParse.parse(formattedDate));
+                    }
+            );
+        }
     }
 }
