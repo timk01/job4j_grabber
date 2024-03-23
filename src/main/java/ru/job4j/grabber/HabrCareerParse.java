@@ -4,23 +4,32 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import ru.job4j.grabber.models.Post;
 import ru.job4j.grabber.utils.DateTimeParser;
 import ru.job4j.grabber.utils.Parser;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-public class HabrCareerParse {
+public class HabrCareerParse implements Parse {
 
     /**
      * "https://career.habr.com/vacancies?page=1&q=Java%20developer&type=all"
      * - полный путь (на самом деле мы собираем строчку, но номер страницы может меняться, остальное статично)
+     * <p> </p>
      */
 
+    private final DateTimeParser dateTimeParser;
     private static final String SOURCE_LINK = "https://career.habr.com";
     public static final String PREFIX = "/vacancies?page=";
     public static final String SUFFIX = "&q=Java%20developer&type=all";
     private static final int START_PAGE = 1;
     private static final int END_PAGE = 5;
+
+    public HabrCareerParse(DateTimeParser dateTimeParser) {
+        this.dateTimeParser = dateTimeParser;
+    }
 
     /**
      * "https://career.habr.com/vacancies/1000138805"
@@ -41,6 +50,7 @@ public class HabrCareerParse {
      *     System.out.println(line);
      * }
      * </pre>
+     *
      * @param link of type String
      * @return vacancy description of type String
      */
@@ -49,6 +59,11 @@ public class HabrCareerParse {
         String fullPage = String.format("%s%s", SOURCE_LINK, link);
         Document document = Jsoup.connect(fullPage).get();
         return document.select(".vacancy-description__text").first().text();
+    }
+
+    public static void main(String[] args)  {
+        HabrCareerParse habrCareerParse = new HabrCareerParse(new Parser());
+        habrCareerParse.list("https://career.habr.com");
     }
 
     /**
@@ -103,30 +118,51 @@ public class HabrCareerParse {
      * <P></P>
      * link.attr("href") - соответственно получение по ключу value, наподобие property.get("key")
      *
-     * @param args
      * @throws IOException
      */
 
-    public static void main(String[] args) throws IOException {
+    private Post postParsing(Element row) throws IOException {
+        Post post = new Post();
+        Element firstVacancyTitle = row.select(".vacancy-card__title")
+                .first()
+                .child(0);
+        post.setTitle(firstVacancyTitle.text());
+        String titleReference = firstVacancyTitle.attr("href");
+        post.setLink(titleReference);
+        post.setDescription(retrieveDescription(titleReference));
+        Element firstVacancyDate = row.select(".vacancy-card__date")
+                .first()
+                .child(0);
+        post.setCreated(dateTimeParser.parse(
+                firstVacancyDate.attr("datetime"))
+        );
+        return post;
+    }
+
+    /**
+     * Здесь мы сначала мастерим полную ссылку (номер будет страницы будет меняться)
+     * Потом получаем по коннекту и get() документ. Документ - целиком.
+     * Из документа по всей вакансии (общее поле) получаем ее элементы (на странице - много элементов)
+     * По каждому из элементов проходимся и заполняем модель с полями, что раньше выводили на экран.
+     * И добавляем каждую модель в лист.
+     * @throws IOException
+     */
+    @Override
+    public List<Post> list(String link) {
+        List<Post> postList = new ArrayList<>();
         for (int pageNumb = START_PAGE; pageNumb <= END_PAGE; pageNumb++) {
-            String fullPage = String.format("%s%s%d%s", SOURCE_LINK, PREFIX, pageNumb, SUFFIX);
-            Document document = Jsoup.connect(fullPage).get();
-            Elements vacancyCard = document.select(".vacancy-card__inner");
-
-            DateTimeParser habrCareerParse
-                    = new Parser();
-
-            vacancyCard.forEach(row -> {
-                        Element title = row.select(".vacancy-card__title").first();
-                        Element link = title.child(0);
-                        String vacancyName = link.text();
-                        String vacLink = String.format("%s%s", SOURCE_LINK, link.attr("href"));
-                        Element transition = row.select(".vacancy-card__date").first();
-                        Element child = transition.child(0);
-                        String formattedDate = String.format("%s", child.attr("datetime"));
-                        System.out.printf("%s; %s; %s%n", vacancyName, vacLink, habrCareerParse.parse(formattedDate));
-                    }
-            );
+            String fullPage = String.format("%s%s%d%s", link, PREFIX, pageNumb, SUFFIX);
+            Document document;
+            try {
+                document = Jsoup.connect(fullPage).get();
+                Elements vacancyCard = document.select(".vacancy-card__inner");
+                for (Element element : vacancyCard) {
+                    postList.add(postParsing(element));
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
+        return postList;
     }
 }
