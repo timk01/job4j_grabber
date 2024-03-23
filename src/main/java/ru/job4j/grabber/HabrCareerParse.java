@@ -24,6 +24,35 @@ public class HabrCareerParse {
     private static final int END_PAGE = 5;
 
     /**
+     * "https://career.habr.com/vacancies/1000138805"
+     * т.е. адрес сайта "https://career.habr.com/ (SOURCE_LINK) +
+     * некий префикс для деталей +
+     * номер;
+     * Или, SOURCE_LINK + /vacancies/1000139737 - что нам УЖЕ возвращает строка link.attr("href")
+     * <p></p>
+     * т.е. использование метода это retrieveDescription(link.attr("href"));
+     * <p></p>
+     * внутри - та же логика, т.е. извлекаем из документа .first().text()
+     * ((первый элемент, т.к. порядок сдвигается если его нет + текст))
+     * <p></p>
+     * позднее разбить на это (сейчас сплошная стена текста)
+     * <pre>
+     * String[] lines = vacancyDescription.split("\\.\\s+");
+     * for (String line : lines) {
+     *     System.out.println(line);
+     * }
+     * </pre>
+     * @param link of type String
+     * @return vacancy description of type String
+     */
+
+    private String retrieveDescription(String link) throws IOException {
+        String fullPage = String.format("%s%s", SOURCE_LINK, link);
+        Document document = Jsoup.connect(fullPage).get();
+        return document.select(".vacancy-description__text").first().text();
+    }
+
+    /**
      * Jsoup.connect(fullPage).get() - получение ВСЕЙ страницы
      * document.select(".vacancy-card__inner") - получение кусочка, элмента страницы
      * (здесь это окошко, внутри коего - вакансия)
@@ -55,7 +84,7 @@ public class HabrCareerParse {
      * которая представляет собой список элементов с классом vacancy-card__title, находящихся внутри элемента row.
      * -- т.е. мы сначала нащли 1 элемент (вакансию) в целом, потом копаемся внутри и извлекаем самое первое поле,
      * что соответствует vacancy-card__title (из коллекции заголовков)
-     *
+     * <p>
      * !!!!!! - т.е. я верно понимаю, что и в .vacancy-card__title может быть список ?
      * (по-сути это первый элемент жэтого списка) - ДА
      * <P></P>
