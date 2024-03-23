@@ -5,9 +5,10 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import ru.job4j.grabber.utils.DateTimeParser;
-import ru.job4j.grabber.utils.Parser;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class HabrCareerParse {
 
@@ -84,7 +85,8 @@ public class HabrCareerParse {
             Document document = Jsoup.connect(fullPage).get();
             Elements vacancyCard = document.select(".vacancy-card__inner");
 
-            DateTimeParser habrCareerParse = new Parser();
+            DateTimeParser habrCareerParse
+                    = string -> LocalDateTime.parse(string, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 
             vacancyCard.forEach(row -> {
                         Element title = row.select(".vacancy-card__title").first();
