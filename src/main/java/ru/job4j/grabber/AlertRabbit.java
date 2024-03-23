@@ -18,7 +18,7 @@ public class AlertRabbit {
     public static Properties getProperties() {
         Properties properties = new Properties();
         try (InputStream input = AlertRabbit.class.getClassLoader()
-                .getResourceAsStream("db/rabbit.properties")) {
+                .getResourceAsStream("app.properties")) {
             properties.load(input);
         } catch (IOException e) {
             throw new IllegalStateException(e);

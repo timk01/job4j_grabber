@@ -6,7 +6,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import ru.job4j.grabber.models.Post;
 import ru.job4j.grabber.utils.DateTimeParser;
-import ru.job4j.grabber.utils.Parser;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -18,6 +17,7 @@ public class HabrCareerParse implements Parse {
      * "https://career.habr.com/vacancies?page=1&q=Java%20developer&type=all"
      * - полный путь (на самом деле мы собираем строчку, но номер страницы может меняться, остальное статично)
      * <p> </p>
+     * "https://career.habr.com/vacancies?page=2&q=Java%20%&type=all"
      */
 
     private final DateTimeParser dateTimeParser;
@@ -59,11 +59,6 @@ public class HabrCareerParse implements Parse {
         String fullPage = String.format("%s%s", SOURCE_LINK, link);
         Document document = Jsoup.connect(fullPage).get();
         return document.select(".vacancy-description__text").first().text();
-    }
-
-    public static void main(String[] args)  {
-        HabrCareerParse habrCareerParse = new HabrCareerParse(new Parser());
-        habrCareerParse.list("https://career.habr.com");
     }
 
     /**

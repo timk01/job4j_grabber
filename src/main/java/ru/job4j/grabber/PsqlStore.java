@@ -1,12 +1,8 @@
 package ru.job4j.grabber;
 
 import ru.job4j.grabber.models.Post;
-import ru.job4j.grabber.utils.Parser;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.sql.*;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -98,76 +94,6 @@ public class PsqlStore implements Store {
     public void close() throws Exception {
         if (connection != null) {
             connection.close();
-        }
-    }
-
-    private static Properties getProperties() {
-        Properties properties = new Properties();
-        try (InputStream input = AlertRabbit.class.getClassLoader()
-                .getResourceAsStream("db/rabbit.properties")) {
-            properties.load(input);
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
-        return properties;
-    }
-
-    private void clearTable() {
-        try (PreparedStatement setSeqToOne =
-                     connection.prepareStatement("ALTER SEQUENCE post_id_seq RESTART WITH 1");
-             PreparedStatement deteleTable =
-                     connection.prepareStatement("DELETE FROM post")) {
-            setSeqToOne.executeUpdate();
-            deteleTable.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void main(String[] args) {
-        try (PsqlStore psqlStore = new PsqlStore(getProperties())) {
-            psqlStore.clearTable();
-            System.out.println("table is empty before:");
-            psqlStore.getAll().forEach(System.out::println);
-            System.out.println();
-            psqlStore.save(new Post(
-                    "job1",
-                    "https://job1",
-                    "job1 description",
-                    LocalDateTime.now()));
-            psqlStore.save(new Post(
-                    "job2",
-                    "https://unique_link",
-                    "not unique link descr",
-                    LocalDateTime.now()));
-            psqlStore.save(new Post(
-                    "job3",
-                    "https://job33",
-                    "job1 description",
-                    LocalDateTime.now()));
-            psqlStore.save(new Post(
-                    "job4",
-                    "https://unique_link",
-                    "not unique link descr",
-                    LocalDateTime.now()));
-            System.out.println("found all existed after:");
-            psqlStore.getAll().forEach(System.out::println);
-            System.out.println("found 1:");
-            System.out.println(psqlStore.findById(1));
-            System.out.println("found 2 (double link):");
-            System.out.println(psqlStore.findById(2));
-            System.out.println("found 3:");
-            System.out.println(psqlStore.findById(3));
-            System.out.println();
-
-            HabrCareerParse habrCareerParse = new HabrCareerParse(new Parser());
-            List<Post> postList = habrCareerParse
-                    .list("https://career.habr.com/vacancies?page=1&q=Java%20developer&type=all");
-            postList.forEach(psqlStore::save);
-            System.out.println("found all existed after addition from Habr:");
-            psqlStore.getAll().forEach(System.out::println);
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 }

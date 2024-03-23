@@ -19,7 +19,7 @@
         <profile>
             <id>production</id>
             <properties>
-                <liquibase.config>src/main/resources/db/rabbit.properties</liquibase.config>
+                <liquibase.config>src/main/resources/app.properties</liquibase.config>
             </properties>
         </profile>
     </profiles>
@@ -82,7 +82,7 @@
                 <artifactId>liquibase-maven-plugin</artifactId>
                 <version>4.23.1</version>
                 <configuration>
-                    <propertyFile>src/main/resources/db/rabbit.properties</propertyFile>
+                    <propertyFile>src/main/resources/app.properties</propertyFile>
                 </configuration>
             </plugin>
             <plugin>
