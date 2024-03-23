@@ -24,7 +24,7 @@ public class HabrCareerParse {
 
     /**
      * "https://career.habr.com/vacancies/1000138805"
-     * т.е. адрес сайта "https://career.habr.com/ (SOURCE_LINK) +
+     * т.е. адрес сайта "https://career.habr.com/ (SOURCE_LINK)" +
      * некий префикс для деталей +
      * номер;
      * Или, SOURCE_LINK + /vacancies/1000139737 - что нам УЖЕ возвращает строка link.attr("href")
