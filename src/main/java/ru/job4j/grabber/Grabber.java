@@ -50,10 +50,17 @@ public class Grabber implements Grab {
 
     /**
      * Клиентом являетс браузер "http://localhost:9000/"
-     * Он и слушает инфу от сервера. grab.web(store) - запускает сервер. Пока он не закрыт,
+     * Он и слушает инфу от сервера (наше приложение). grab.web(store) - запускает сервер. Пока он не закрыт,
      * server.accept() - принимает инфу. В качестве поставщика инфы выступает не клиент, а БД
-     *  out.write(post.toString().getBytes(Charset.forName("Windows-1251"))) - шлет переработанную
-     *  инфу в браузер
+     * out.write(post.toString().getBytes(Charset.forName("Windows-1251"))) - шлет переработанную
+     * инфу в браузер
+     * <p></p>
+     * Клиент - это браузер, сервер - наше написанное приложение.
+     * Конкретно наш сервер создается в методе web (new ServerSocket()).
+     * Командой new Thread() создается отдельный поток, отличный от потока main,
+     * и затем запускается методом start().
+     * В свою очередь наша программа является клиентом для сервера БД Postgres.
+     * Этот сервер запускается как служба, одновременно с запуском ПК, мы к нему только подключаемся.
      * @param store
      */
     public void web(Store store) {
@@ -83,7 +90,9 @@ public class Grabber implements Grab {
             JobDataMap map = context.getJobDetail().getJobDataMap();
             Store store = (Store) map.get("store");
             Parse parse = (Parse) map.get("parse");
-            List<Post> list = parse.list("https://career.habr.com");
+            List<Post> list = parse.list(
+                    "https://career.habr.com/vacancies/java_developer"
+            );
             list.forEach(store::save);
         }
     }

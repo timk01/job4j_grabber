@@ -22,8 +22,6 @@ public class HabrCareerParse implements Parse {
 
     private final DateTimeParser dateTimeParser;
     private static final String SOURCE_LINK = "https://career.habr.com";
-    public static final String PREFIX = "/vacancies?page=";
-    public static final String SUFFIX = "&q=Java%20developer&type=all";
     private static final int START_PAGE = 1;
     private static final int END_PAGE = 5;
 
@@ -146,7 +144,7 @@ public class HabrCareerParse implements Parse {
     public List<Post> list(String link) {
         List<Post> postList = new ArrayList<>();
         for (int pageNumb = START_PAGE; pageNumb <= END_PAGE; pageNumb++) {
-            String fullPage = String.format("%s%s%d%s", link, PREFIX, pageNumb, SUFFIX);
+            String fullPage = String.format("%s?page=%s", link, pageNumb);
             Document document;
             try {
                 document = Jsoup.connect(fullPage).get();
