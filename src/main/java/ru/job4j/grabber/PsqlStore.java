@@ -18,15 +18,21 @@ public class PsqlStore implements Store {
                 properties.getProperty("password"));
     }
 
+    /**
+     * since we are not returning object (mind returning value is "void")
+     * you don't need here Statement.RETURN_GENERATED_KEYS
+     * !!!!! ID is generated automatically by inserting
+     * <p></p>
+     * and one more important nuance:
+     * since we have "DO NOTHING" on ID conficts, some ID-s can be missing
+     * @param post
+     */
+
     @Override
     public void save(Post post) {
         try (PreparedStatement statement =
                      connection.prepareStatement(
-                             "INSERT INTO post(name, link, text, created) "
-                                     + "VALUES (?, ?, ?, ?) "
-                                     + "ON CONFLICT(link) "
-                                     + "DO NOTHING",
-                             Statement.RETURN_GENERATED_KEYS
+                             PsqlStoreStatements.SAVE.getStatement()
                      )
         ) {
             statement.setString(1, post.getTitle());
@@ -34,10 +40,6 @@ public class PsqlStore implements Store {
             statement.setString(3, post.getDescription());
             statement.setTimestamp(4, Timestamp.valueOf(post.getCreated()));
             statement.executeUpdate();
-            ResultSet generatedKeys = statement.getGeneratedKeys();
-            if (generatedKeys.next()) {
-                post.setId(generatedKeys.getInt("id"));
-            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -58,7 +60,8 @@ public class PsqlStore implements Store {
         List<Post> posts = new ArrayList<>();
         try (PreparedStatement statement =
                      connection.prepareStatement(
-                             "SELECT * FROM post")
+                             PsqlStoreStatements.GET_ALL.getStatement()
+                     )
         ) {
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
@@ -76,7 +79,8 @@ public class PsqlStore implements Store {
         Post post = null;
         try (PreparedStatement statement =
                      connection.prepareStatement(
-                             "SELECT * FROM post where id = ?")
+                             PsqlStoreStatements.FIND_BY_ID.getStatement()
+                     )
         ) {
             statement.setInt(1, id);
             try (ResultSet resultSet = statement.executeQuery()) {

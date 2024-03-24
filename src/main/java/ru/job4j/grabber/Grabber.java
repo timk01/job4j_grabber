@@ -48,6 +48,14 @@ public class Grabber implements Grab {
         scheduler.scheduleJob(job, trigger);
     }
 
+    /**
+     * Клиентом являетс браузер "http://localhost:9000/"
+     * Он и слушает инфу от сервера. grab.web(store) - запускает сервер. Пока он не закрыт,
+     * server.accept() - принимает инфу. В качестве поставщика инфы выступает не клиент, а БД
+     *  out.write(post.toString().getBytes(Charset.forName("Windows-1251"))) - шлет переработанную
+     *  инфу в браузер
+     * @param store
+     */
     public void web(Store store) {
         new Thread(() -> {
             try (ServerSocket server = new ServerSocket(Integer.parseInt(cfg.getProperty("port")))) {
